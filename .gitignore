@@ -25,3 +25,7 @@ replay_pid*
 
 /target/
 .idea/
+.classpath
+.project
+.settings
+
