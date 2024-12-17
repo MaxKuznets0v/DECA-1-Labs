@@ -48,10 +48,10 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 			if (invokeExpr instanceof JVirtualInvokeExpr) {
 				MethodSignature implementedCall = getImplementedMethod(innerMethod.getDeclClassType(), innerMethod, view);
 				innerMethod = implementedCall;
-				potentialMethods.addAll(resolveVirtualCall(implementedCall, view));
+				potentialMethods.addAll(resolveVirtualCall(innerMethod.getDeclClassType(), implementedCall, view));
 			}
 			else if (invokeExpr instanceof JInterfaceInvokeExpr) {
-				potentialMethods.addAll(resolveVirtualCall(innerMethod, view));
+				potentialMethods.addAll(resolveVirtualCall(innerMethod.getDeclClassType(), innerMethod, view));
 			}
 			potentialMethods.add(innerMethod);
 			
@@ -86,9 +86,8 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 		return getImplementedMethod(parType.get(), callMethod, view);
 	}
 	
-	protected Set<MethodSignature> resolveVirtualCall(MethodSignature m, @Nonnull JavaView view) {
+	protected Set<MethodSignature> resolveVirtualCall(ClassType type, MethodSignature m, @Nonnull JavaView view) {
 		Set<MethodSignature> virtualCalls = new HashSet<>();
-		ClassType type = m.getDeclClassType();
 		TypeHierarchy hierarchy = view.getTypeHierarchy();
 		if (hierarchy.contains(type)) {
 			Stream<ClassType> subtypes = hierarchy.subtypesOf(type);
