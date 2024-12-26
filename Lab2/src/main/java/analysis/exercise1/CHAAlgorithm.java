@@ -66,7 +66,7 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 			}
 		});
 	}
-	
+
 	protected MethodSignature getImplementedMethod(ClassType type, MethodSignature callMethod, @Nonnull JavaView view) {
 		Optional<JavaSootClass> viewClass = view.getClass(type);
 		if (!viewClass.isPresent()) {
@@ -75,17 +75,18 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 		
 		JavaSootClass cl = viewClass.get();
 		Optional<JavaSootMethod> classMethod = cl.getMethod(callMethod.getSubSignature());
+		// if implementation is already present in the method's class, return it.
 		if (classMethod.isPresent()) {
 			return classMethod.get().getSignature();
 		}
+		// otherwise recursively check the parent class for implementation.
 		Optional<JavaClassType> parType = cl.getSuperclass();
 		if (!parType.isPresent()) {
 			return callMethod;
 		}
-		
 		return getImplementedMethod(parType.get(), callMethod, view);
 	}
-	
+
 	protected Set<MethodSignature> resolveVirtualCall(ClassType type, MethodSignature m, @Nonnull JavaView view) {
 		Set<MethodSignature> virtualCalls = new HashSet<>();
 		TypeHierarchy hierarchy = view.getTypeHierarchy();
@@ -101,8 +102,6 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 
 	@Override
 	protected void populateCallGraph(@Nonnull JavaView view, @Nonnull CallGraph cg) {
-		// Your implementation goes here, also feel free to add methods as needed
-		// To get your entry points we prepared getEntryPoints(view) in the superclass for you
 
 		// TODO: Verify
 		Stream<MethodSignature> methodSignatureStream = getEntryPoints(view);
