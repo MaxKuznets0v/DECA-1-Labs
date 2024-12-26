@@ -1,14 +1,8 @@
 package analysis.exercise2;
 
-import analysis.CallGraph;
 import analysis.exercise1.CHAAlgorithm;
 import javax.annotation.Nonnull;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import sootup.core.jimple.basic.Value;
-import sootup.core.jimple.common.expr.AbstractInvokeExpr;
-import sootup.core.jimple.common.expr.JInterfaceInvokeExpr;
-import sootup.core.jimple.common.expr.JVirtualInvokeExpr;
 import sootup.core.jimple.common.expr.JNewExpr;
 import sootup.core.jimple.common.stmt.JAssignStmt;
 import sootup.core.model.Body;
@@ -16,17 +10,15 @@ import sootup.core.signatures.MethodSignature;
 import sootup.core.typehierarchy.TypeHierarchy;
 import sootup.core.types.ClassType;
 import sootup.java.core.JavaSootClass;
-import sootup.java.core.JavaSootMethod;
 import sootup.java.core.views.JavaView;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public class RTAAlgorithm extends CHAAlgorithm {
 
-  protected final Set<ClassType> instantiatedClasses = new HashSet<>();
+  private final static String PACKAGE_SEARCH_SCOPE = "exercise2";
 
   @Nonnull
   @Override
@@ -37,6 +29,8 @@ public class RTAAlgorithm extends CHAAlgorithm {
   @Override
   protected Set<MethodSignature> resolveVirtualCall(ClassType type, MethodSignature m, @Nonnull JavaView view) {
     Set<MethodSignature> virtualCalls = new HashSet<>();
+    // only search instantiations in classes under "PACKAGE_SEARCH_SCOPE" directory.
+    Set<ClassType> instantiatedClasses = getInstantiatedClasses(view, PACKAGE_SEARCH_SCOPE);
     TypeHierarchy hierarchy = view.getTypeHierarchy();
     if (hierarchy.contains(type)) {
       Stream<ClassType> subtypes = hierarchy.subtypesOf(type);
@@ -48,23 +42,10 @@ public class RTAAlgorithm extends CHAAlgorithm {
     return virtualCalls;
   }
 
-  @Override
-  protected void populateCallGraph(@Nonnull JavaView view, @Nonnull CallGraph cg) {
-    /* NOTE: the search for instantiated classes (with new keyword) is done for all files under "exercise2" package
-    * This can be changed by setting "packageScope" parameter to the desired package/directory */
-    findInstantiatedClasses(view, "exercise2");
+  protected Set<ClassType> getInstantiatedClasses(@Nonnull JavaView view, @Nonnull String packageScope){
+    Set<ClassType> instantiatedClasses = new HashSet<>();
 
-    Stream<MethodSignature> methodSignatureStream = getEntryPoints(view);
-    methodSignatureStream.forEach(entry -> {
-      if (!cg.hasNode(entry)) {
-        cg.addNode(entry);
-      }
-      parseMethodStatements(entry, view, cg);
-    });
-  }
-
-  protected void findInstantiatedClasses(@Nonnull JavaView view, @Nonnull String packageScope){
-    // only scan files under 'exercise2' package.
+    // only scan files under 'packageScope' directory.
     Stream<JavaSootClass> allPackageClasses = view.getClasses()
             .stream()
             .filter(clazz -> clazz.getName().contains("." + packageScope + "."));
@@ -82,8 +63,10 @@ public class RTAAlgorithm extends CHAAlgorithm {
                 .map(JAssignStmt::getRightOp)
                 .filter(operand -> operand instanceof JNewExpr)
                 .map(operand -> (JNewExpr) operand)
-                .forEach(newExp -> this.instantiatedClasses.add(newExp.getType()));
+                .forEach(newExp -> instantiatedClasses.add(newExp.getType()));
       });
     });
+      return instantiatedClasses;
   }
+
 }
