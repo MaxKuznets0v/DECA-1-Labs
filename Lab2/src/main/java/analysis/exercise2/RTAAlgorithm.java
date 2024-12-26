@@ -28,23 +28,6 @@ public class RTAAlgorithm extends CHAAlgorithm {
 
   protected final Set<ClassType> instantiatedClasses = new HashSet<>();
 
-  @Override
-  protected Set<MethodSignature> resolveVirtualCall(ClassType type, MethodSignature m, @Nonnull JavaView view) {
-    Set<MethodSignature> virtualCalls = new HashSet<>();
-    TypeHierarchy hierarchy = view.getTypeHierarchy();
-    if (hierarchy.contains(type)) {
-      Stream<ClassType> subtypes = hierarchy.subtypesOf(type);
-      System.out.println("Subtypes: " + subtypes);
-      subtypes.forEach(sub -> {
-        if (instantiatedClasses.contains(sub)) {
-          MethodSignature sm = view.getIdentifierFactory().getMethodSignature(sub, m.getSubSignature());
-          virtualCalls.add(sm);
-        }
-      });
-    }
-    return virtualCalls;
-  }
-
   @Nonnull
   @Override
   protected String getAlgorithm() {
@@ -52,52 +35,25 @@ public class RTAAlgorithm extends CHAAlgorithm {
   }
 
   @Override
-  protected void parseMethodStatements(MethodSignature m, @Nonnull JavaView view, @Nonnull CallGraph cg) {
-    Optional<JavaSootMethod> sootMethod = view.getMethod(m);
-    if (!sootMethod.isPresent()) {
-      return;
+  protected Set<MethodSignature> resolveVirtualCall(ClassType type, MethodSignature m, @Nonnull JavaView view) {
+    Set<MethodSignature> virtualCalls = new HashSet<>();
+    TypeHierarchy hierarchy = view.getTypeHierarchy();
+    if (hierarchy.contains(type)) {
+      Stream<ClassType> subtypes = hierarchy.subtypesOf(type);
+      subtypes.filter(instantiatedClasses::contains)
+              .forEach(sub -> {
+                MethodSignature sm = view.getIdentifierFactory().getMethodSignature(sub, m.getSubSignature());
+                virtualCalls.add(sm);});
     }
-
-    JavaSootMethod javaSootMethod = sootMethod.get();
-    if (!javaSootMethod.hasBody()) {
-      return;
-    }
-
-    Body body = javaSootMethod.getBody();
-    body.getStmts().forEach(stmt -> {
-      if (!stmt.containsInvokeExpr()) {
-        return;
-      }
-
-      AbstractInvokeExpr invokeExpr = stmt.getInvokeExpr();
-      MethodSignature innerMethod = invokeExpr.getMethodSignature();
-      Set<MethodSignature> potentialMethods = new HashSet<>();
-      if (invokeExpr instanceof JVirtualInvokeExpr) {
-        MethodSignature implementedCall = getImplementedMethod(innerMethod.getDeclClassType(), innerMethod, view);
-        innerMethod = implementedCall;
-        potentialMethods.addAll(resolveVirtualCall(innerMethod.getDeclClassType(), implementedCall, view));
-      }
-      else if (invokeExpr instanceof JInterfaceInvokeExpr) {
-        potentialMethods.addAll(resolveVirtualCall(innerMethod.getDeclClassType(), innerMethod, view));
-      }
-      potentialMethods.add(innerMethod);
-
-      for (MethodSignature methodSignature : potentialMethods) {
-        if (!cg.hasNode(methodSignature)) {
-          cg.addNode(methodSignature);
-        }
-        if (!cg.hasEdge(m, methodSignature)) {
-          cg.addEdge(m, methodSignature);
-        }
-        parseMethodStatements(methodSignature, view, cg);
-      }
-    });
+    return virtualCalls;
   }
 
   @Override
   protected void populateCallGraph(@Nonnull JavaView view, @Nonnull CallGraph cg) {
+    /* NOTE: the search for instantiated classes (with new keyword) is done for all files under "exercise2" package
+    * This can be changed by setting "packageScope" parameter to the desired package/directory */
     findInstantiatedClasses(view, "exercise2");
-    System.out.println("CLASSES: " + this.instantiatedClasses);
+
     Stream<MethodSignature> methodSignatureStream = getEntryPoints(view);
     methodSignatureStream.forEach(entry -> {
       if (!cg.hasNode(entry)) {
@@ -109,26 +65,24 @@ public class RTAAlgorithm extends CHAAlgorithm {
 
   protected void findInstantiatedClasses(@Nonnull JavaView view, @Nonnull String packageScope){
     // only scan files under 'exercise2' package.
-    Stream<JavaSootClass> allClasses = view.getClasses()
+    Stream<JavaSootClass> allPackageClasses = view.getClasses()
             .stream()
             .filter(clazz -> clazz.getName().contains("." + packageScope + "."));
 
     // for each class, parse its methods, locate newExprs (exprs with new keyword) and store them.
-    allClasses.forEach(clazz -> {
+    allPackageClasses.forEach(clazz -> {
       clazz.getMethods().forEach(method -> {
         if (!method.hasBody())
           return;
 
         Body body = method.getBody();
-        body.getStmts().forEach(stmt -> {
-          if (stmt instanceof JAssignStmt){
-            JAssignStmt assignStmt = (JAssignStmt) stmt;
-            if (assignStmt.getRightOp() instanceof JNewExpr){
-              JNewExpr newExpr = (JNewExpr) assignStmt.getRightOp();
-              this.instantiatedClasses.add(newExpr.getType());
-            }
-          }
-        });
+        body.getStmts().stream()
+                .filter(stmt -> stmt instanceof JAssignStmt)
+                .map(stmt -> (JAssignStmt) stmt)
+                .map(JAssignStmt::getRightOp)
+                .filter(operand -> operand instanceof JNewExpr)
+                .map(operand -> (JNewExpr) operand)
+                .forEach(newExp -> this.instantiatedClasses.add(newExp.getType()));
       });
     });
   }
