@@ -2,23 +2,18 @@ package analysis.exercise2;
 
 import analysis.exercise1.CHAAlgorithm;
 import javax.annotation.Nonnull;
-
 import sootup.core.jimple.common.expr.JNewExpr;
 import sootup.core.jimple.common.stmt.JAssignStmt;
 import sootup.core.model.Body;
 import sootup.core.signatures.MethodSignature;
 import sootup.core.typehierarchy.TypeHierarchy;
 import sootup.core.types.ClassType;
-import sootup.java.core.JavaSootClass;
 import sootup.java.core.views.JavaView;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public class RTAAlgorithm extends CHAAlgorithm {
-
-  private final static String PACKAGE_SEARCH_SCOPE = "exercise2";
 
   @Nonnull
   @Override
@@ -29,8 +24,7 @@ public class RTAAlgorithm extends CHAAlgorithm {
   @Override
   protected Set<MethodSignature> resolveVirtualCall(ClassType type, MethodSignature m, @Nonnull JavaView view) {
     Set<MethodSignature> virtualCalls = new HashSet<>();
-    // only search instantiations in classes under "PACKAGE_SEARCH_SCOPE" directory.
-    Set<ClassType> instantiatedClasses = getInstantiatedClasses(view, PACKAGE_SEARCH_SCOPE);
+    Set<ClassType> instantiatedClasses = getInstantiatedClasses(view);
     TypeHierarchy hierarchy = view.getTypeHierarchy();
     if (hierarchy.contains(type)) {
       Stream<ClassType> subtypes = hierarchy.subtypesOf(type);
@@ -42,16 +36,11 @@ public class RTAAlgorithm extends CHAAlgorithm {
     return virtualCalls;
   }
 
-  protected Set<ClassType> getInstantiatedClasses(@Nonnull JavaView view, @Nonnull String packageScope){
+  protected Set<ClassType> getInstantiatedClasses(@Nonnull JavaView view){
     Set<ClassType> instantiatedClasses = new HashSet<>();
 
-    // only scan files under 'packageScope' directory.
-    Stream<JavaSootClass> allPackageClasses = view.getClasses()
-            .stream()
-            .filter(clazz -> clazz.getName().contains("." + packageScope + "."));
-
     // for each class, parse its methods, locate newExprs (exprs with new keyword) and store them.
-    allPackageClasses.forEach(clazz -> {
+    view.getClasses().forEach(clazz -> {
       clazz.getMethods().forEach(method -> {
         if (!method.hasBody())
           return;

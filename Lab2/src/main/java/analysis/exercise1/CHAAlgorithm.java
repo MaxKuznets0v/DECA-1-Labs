@@ -102,8 +102,6 @@ public class CHAAlgorithm extends CallGraphAlgorithm {
 
 	@Override
 	protected void populateCallGraph(@Nonnull JavaView view, @Nonnull CallGraph cg) {
-
-		// TODO: Verify
 		Stream<MethodSignature> methodSignatureStream = getEntryPoints(view);
 		methodSignatureStream.forEach(entry -> {
 			if (!cg.hasNode(entry)) {
