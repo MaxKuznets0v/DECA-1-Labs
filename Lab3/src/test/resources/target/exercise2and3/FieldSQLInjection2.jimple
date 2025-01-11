@@ -1,0 +1,79 @@
+public class target.exercise2and3.FieldSQLInjection2 extends java.lang.Object
+{
+    public void doGet(target.exercise1.HttpServletRequest)
+    {
+        java.lang.Object $o;
+        java.lang.String $userId;
+        target.exercise1.HttpServletRequest $request;
+        target.exercise2and3.FieldSQLInjection2 $this;
+        target.exercise2and3.FieldSQLInjection2$ObjectWithTaint $l0, $l1, $l2,$stack4;
+
+
+        $this := @this: target.exercise2and3.FieldSQLInjection2;
+        $request := @parameter0: target.exercise1.HttpServletRequest;
+        $userId = virtualinvoke $request.<target.exercise1.HttpServletRequest: java.lang.String getParameter(java.lang.String)>("userId");
+        $stack4 = new target.exercise2and3.FieldSQLInjection2$ObjectWithTaint;
+        $l0 = $stack4;
+        specialinvoke $l0.<target.exercise2and3.FieldSQLInjection2$ObjectWithTaint: void <init>(target.exercise2and3.FieldSQLInjection2$1)>(null);
+        $o = $stack4;
+        $l1 = $stack4;
+        $l1.<target.exercise2and3.FieldSQLInjection2$ObjectWithTaint: java.lang.String userInput> = $userId;
+        specialinvoke $this.<target.exercise2and3.FieldSQLInjection2: void createQuery(target.exercise2and3.FieldSQLInjection2$ObjectWithTaint)>($l1);
+
+        return;
+    }
+
+    public void <init>()
+    {
+        target.exercise2and3.FieldSQLInjection2 $this;
+
+
+        $this := @this: target.exercise2and3.FieldSQLInjection2;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    private void createQuery(target.exercise2and3.FieldSQLInjection2$ObjectWithTaint)
+    {
+        java.io.PrintStream $stack11;
+        java.lang.String $loaded, $query;
+        java.lang.StringBuilder $stack6, $stack7, $stack8, $stack9;
+        java.lang.Throwable $conn2, $stack10;
+        java.sql.Connection $conn;
+        java.sql.Statement $st;
+        target.exercise2and3.FieldSQLInjection2 $this;
+        target.exercise2and3.FieldSQLInjection2$ObjectWithTaint $parameter;
+
+
+        $this := @this: target.exercise2and3.FieldSQLInjection2;
+        $parameter := @parameter0: target.exercise2and3.FieldSQLInjection2$ObjectWithTaint;
+        $loaded = $parameter.<target.exercise2and3.FieldSQLInjection2$ObjectWithTaint: java.lang.String userInput>;
+
+      label1:
+        $conn = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>("url", "userName", "password");
+        $st = interfaceinvoke $conn.<java.sql.Connection: java.sql.Statement createStatement()>();
+        $stack6 = new java.lang.StringBuilder;
+        specialinvoke $stack6.<java.lang.StringBuilder: void <init>()>();
+        $stack7 = virtualinvoke $stack6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("SELECT * FROM  User where userId=\'");
+        $stack8 = virtualinvoke $stack7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($loaded);
+        $stack9 = virtualinvoke $stack8.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("\'");
+        $query = virtualinvoke $stack9.<java.lang.StringBuilder: java.lang.String toString()>();
+        interfaceinvoke $st.<java.sql.Statement: java.sql.ResultSet executeQuery(java.lang.String)>($query);
+
+      label2:
+        goto label4;
+
+      label3:
+        $stack10 := @caughtexception;
+        $conn2 = $stack10;
+        $stack11 = <java.lang.System: java.io.PrintStream out>;
+        virtualinvoke $stack11.<java.io.PrintStream: void println(java.lang.String)>("Something went wrong");
+
+      label4:
+        return;
+
+ catch java.lang.Exception from label1 to label2 with label3;
+    }
+}
+

@@ -1,0 +1,75 @@
+public class target.exercise4.UnsoundExample extends java.lang.Object
+{
+    public void <init>()
+    {
+        target.exercise4.UnsoundExample $this;
+
+
+        $this := @this: target.exercise4.UnsoundExample;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public void doGet(target.exercise1.HttpServletRequest)
+    {
+        java.io.PrintStream $stack18;
+        java.lang.Object $stack11, $stack12, $x, $y;
+        java.lang.String $alias, $query, $userId;
+        java.lang.StringBuilder $stack13, $stack14, $stack15, $stack16;
+        java.lang.Throwable $conn2, $stack17;
+        java.sql.Connection $conn;
+        java.sql.Statement $st;
+        target.exercise1.HttpServletRequest $request;
+        target.exercise4.UnsoundExample $this;
+        target.exercise4.UnsoundExample$Container1 $l0, $l1, $l4, $c;
+        target.exercise4.UnsoundExample$Container2 $l2, $l3, $l5;
+
+
+        $this := @this: target.exercise4.UnsoundExample;
+        $request := @parameter0: target.exercise1.HttpServletRequest;
+        $userId = virtualinvoke $request.<target.exercise1.HttpServletRequest: java.lang.String getParameter(java.lang.String)>("userId");
+        $stack11 = new target.exercise4.UnsoundExample$Container1;
+        $l0 = (target.exercise4.UnsoundExample$Container1) $stack11;
+        specialinvoke $l0.<target.exercise4.UnsoundExample$Container1: void <init>()>();
+        $x = $stack11;
+        $l1 = (target.exercise4.UnsoundExample$Container1) $stack11;
+        $l1.<target.exercise4.UnsoundExample$Container1: java.lang.String taint> = $userId;
+        $stack12 = new target.exercise4.UnsoundExample$Container2;
+        $l2 = (target.exercise4.UnsoundExample$Container2) $stack12;
+        specialinvoke $l2.<target.exercise4.UnsoundExample$Container2: void <init>()>();
+        $y = $stack12;
+        $l3 = (target.exercise4.UnsoundExample$Container2) $stack12;
+        $l4 = (target.exercise4.UnsoundExample$Container1) $x;
+        $l3.<target.exercise4.UnsoundExample$Container2: target.exercise4.UnsoundExample$Container1 container> = $l4;
+        $l5 = (target.exercise4.UnsoundExample$Container2) $stack12;
+        $c = $l5.<target.exercise4.UnsoundExample$Container2: target.exercise4.UnsoundExample$Container1 container>;
+        $alias = $c.<target.exercise4.UnsoundExample$Container1: java.lang.String taint>;
+
+      label1:
+        $conn = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>("url", "userName", "password");
+        $st = interfaceinvoke $conn.<java.sql.Connection: java.sql.Statement createStatement()>();
+        $stack13 = new java.lang.StringBuilder;
+        specialinvoke $stack13.<java.lang.StringBuilder: void <init>()>();
+        $stack14 = virtualinvoke $stack13.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("SELECT * FROM  User where userId=\'");
+        $stack15 = virtualinvoke $stack14.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($alias);
+        $stack16 = virtualinvoke $stack15.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("\'");
+        $query = virtualinvoke $stack16.<java.lang.StringBuilder: java.lang.String toString()>();
+        interfaceinvoke $st.<java.sql.Statement: java.sql.ResultSet executeQuery(java.lang.String)>($query);
+
+      label2:
+        goto label4;
+
+      label3:
+        $stack17 := @caughtexception;
+        $conn2 = $stack17;
+        $stack18 = <java.lang.System: java.io.PrintStream out>;
+        virtualinvoke $stack18.<java.io.PrintStream: void println(java.lang.String)>("Something went wrong");
+
+      label4:
+        return;
+
+ catch java.lang.Exception from label1 to label2 with label3;
+    }
+}
+

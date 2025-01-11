@@ -1,0 +1,16 @@
+public class target.exercise4.UnsoundExample$Container1 extends java.lang.Object
+{
+    public java.lang.String taint;
+
+    public void <init>()
+    {
+        target.exercise4.UnsoundExample$Container1 $this;
+
+
+        $this := @this: target.exercise4.UnsoundExample$Container1;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}
+

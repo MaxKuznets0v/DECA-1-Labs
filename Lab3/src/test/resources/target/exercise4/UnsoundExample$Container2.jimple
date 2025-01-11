@@ -1,0 +1,16 @@
+public class target.exercise4.UnsoundExample$Container2 extends java.lang.Object
+{
+    public target.exercise4.UnsoundExample$Container1 container;
+
+    public void <init>()
+    {
+        target.exercise4.UnsoundExample$Container2 $this;
+
+
+        $this := @this: target.exercise4.UnsoundExample$Container2;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}
+

@@ -1,0 +1,62 @@
+public class target.exercise1.AssignmentSQLInjection extends java.lang.Object
+{
+    public void <init>()
+    {
+        target.exercise1.AssignmentSQLInjection $this;
+
+
+        $this := @this: target.exercise1.AssignmentSQLInjection;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public void doGet(target.exercise1.HttpServletRequest)
+    {
+        java.io.PrintStream $stack11, $stack12, $stack14;
+        java.lang.String $alias, $query, $userId;
+        java.lang.StringBuilder $stack10, $stack7, $stack8, $stack9;
+        java.lang.Throwable $conn2, $stack13;
+        java.sql.Connection $conn;
+        java.sql.Statement $st;
+        target.exercise1.AssignmentSQLInjection $this;
+        target.exercise1.HttpServletRequest $request;
+
+
+        $this := @this: target.exercise1.AssignmentSQLInjection;
+        $request := @parameter0: target.exercise1.HttpServletRequest;
+        $userId = virtualinvoke $request.<target.exercise1.HttpServletRequest: java.lang.String getParameter(java.lang.String)>("userId");
+        $alias = $userId;
+
+      label1:
+        $conn = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>("url", "userName", "password");
+        $st = interfaceinvoke $conn.<java.sql.Connection: java.sql.Statement createStatement()>();
+        $stack7 = new java.lang.StringBuilder;
+        specialinvoke $stack7.<java.lang.StringBuilder: void <init>()>();
+        $stack8 = virtualinvoke $stack7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("SELECT * FROM  User where userId=\'");
+        $stack9 = virtualinvoke $stack8.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($userId);
+        $stack10 = virtualinvoke $stack9.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("\'");
+        $query = virtualinvoke $stack10.<java.lang.StringBuilder: java.lang.String toString()>();
+        interfaceinvoke $st.<java.sql.Statement: java.sql.ResultSet executeQuery(java.lang.String)>($query);
+
+      label2:
+        goto label4;
+
+      label3:
+        $stack13 := @caughtexception;
+        $conn2 = $stack13;
+        $stack14 = <java.lang.System: java.io.PrintStream out>;
+        virtualinvoke $stack14.<java.io.PrintStream: void println(java.lang.String)>("Something went wrong");
+
+      label4:
+        $stack11 = <java.lang.System: java.io.PrintStream out>;
+        virtualinvoke $stack11.<java.io.PrintStream: void println(java.lang.String)>($userId);
+        $stack12 = <java.lang.System: java.io.PrintStream out>;
+        virtualinvoke $stack12.<java.io.PrintStream: void println(java.lang.String)>($userId);
+
+        return;
+
+ catch java.lang.Exception from label1 to label2 with label3;
+    }
+}
+

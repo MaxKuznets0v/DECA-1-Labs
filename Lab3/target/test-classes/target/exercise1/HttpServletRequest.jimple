@@ -1,0 +1,26 @@
+public class target.exercise1.HttpServletRequest extends java.lang.Object
+{
+    public void <init>()
+    {
+        target.exercise1.HttpServletRequest $this;
+
+
+        $this := @this: target.exercise1.HttpServletRequest;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public java.lang.String getParameter(java.lang.String)
+    {
+        java.lang.String $string;
+        target.exercise1.HttpServletRequest $this;
+
+
+        $this := @this: target.exercise1.HttpServletRequest;
+        $string := @parameter0: java.lang.String;
+
+        return "Real library returns the actual request parameter";
+    }
+}
+

@@ -1,0 +1,32 @@
+class target.exercise2and3.FieldSQLInjection2$ObjectWithTaint extends java.lang.Object
+{
+    java.lang.String userInput;
+
+    private void <init>()
+    {
+        java.lang.Object $this;
+        target.exercise2and3.FieldSQLInjection2$ObjectWithTaint $l0;
+
+
+        $this := @this: target.exercise2and3.FieldSQLInjection2$ObjectWithTaint;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+        $l0 = (target.exercise2and3.FieldSQLInjection2$ObjectWithTaint) $this;
+        $l0.<target.exercise2and3.FieldSQLInjection2$ObjectWithTaint: java.lang.String userInput> = "noUserInput";
+
+        return;
+    }
+
+     void <init>(target.exercise2and3.FieldSQLInjection2$1)
+    {
+        target.exercise2and3.FieldSQLInjection2$1 $x0;
+        target.exercise2and3.FieldSQLInjection2$ObjectWithTaint $this;
+
+
+        $this := @this: target.exercise2and3.FieldSQLInjection2$ObjectWithTaint;
+        $x0 := @parameter0: target.exercise2and3.FieldSQLInjection2$1;
+        specialinvoke $this.<target.exercise2and3.FieldSQLInjection2$ObjectWithTaint: void <init>()>();
+
+        return;
+    }
+}
+

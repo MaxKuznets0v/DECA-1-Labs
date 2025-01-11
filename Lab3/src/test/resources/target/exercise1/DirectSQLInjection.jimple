@@ -1,0 +1,56 @@
+public class target.exercise1.DirectSQLInjection extends java.lang.Object
+{
+    public void doGet(target.exercise1.HttpServletRequest)
+    {
+        java.io.PrintStream $stack11;
+        java.lang.String $query, $userId;
+        java.lang.StringBuilder $stack6, $stack7, $stack8, $stack9;
+        java.lang.Throwable $stack10, $userId2;
+        java.sql.Connection $conn;
+        java.sql.Statement $st;
+        target.exercise1.DirectSQLInjection $this;
+        target.exercise1.HttpServletRequest $request;
+
+
+        $this := @this: target.exercise1.DirectSQLInjection;
+        $request := @parameter0: target.exercise1.HttpServletRequest;
+
+      label1:
+        $userId = virtualinvoke $request.<target.exercise1.HttpServletRequest: java.lang.String getParameter(java.lang.String)>("userId");
+        $conn = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>("url", "userName", "password");
+        $st = interfaceinvoke $conn.<java.sql.Connection: java.sql.Statement createStatement()>();
+        $stack6 = new java.lang.StringBuilder;
+        specialinvoke $stack6.<java.lang.StringBuilder: void <init>()>();
+        $stack7 = virtualinvoke $stack6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("SELECT * FROM  User where userId=\'");
+        $stack8 = virtualinvoke $stack7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($userId);
+        $stack9 = virtualinvoke $stack8.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("\'");
+        $query = virtualinvoke $stack9.<java.lang.StringBuilder: java.lang.String toString()>();
+        interfaceinvoke $st.<java.sql.Statement: java.sql.ResultSet executeQuery(java.lang.String)>($query);
+
+      label2:
+        goto label4;
+
+      label3:
+        $stack10 := @caughtexception;
+        $userId2 = $stack10;
+        $stack11 = <java.lang.System: java.io.PrintStream out>;
+        virtualinvoke $stack11.<java.io.PrintStream: void println(java.lang.String)>("Something went wrong");
+
+      label4:
+        return;
+
+ catch java.lang.Exception from label1 to label2 with label3;
+    }
+
+    public void <init>()
+    {
+        target.exercise1.DirectSQLInjection $this;
+
+
+        $this := @this: target.exercise1.DirectSQLInjection;
+        specialinvoke $this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}
+
