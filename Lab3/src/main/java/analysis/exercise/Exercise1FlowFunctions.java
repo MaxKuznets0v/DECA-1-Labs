@@ -8,10 +8,13 @@ import heros.FlowFunction;
 import sootup.core.jimple.basic.Local;
 import sootup.core.jimple.basic.Value;
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr;
+import sootup.core.jimple.common.expr.AbstractInvokeExpr;
 import sootup.core.jimple.common.stmt.JAssignStmt;
 import sootup.core.jimple.common.stmt.Stmt;
+import sootup.core.model.Body;
 import sootup.core.model.SootMethod;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -33,6 +36,20 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
             //TODO: Implement Exercise 1c) here
 
+            if (callSite.containsInvokeExpr()) {
+                AbstractInstanceInvokeExpr invokeExpr = (AbstractInstanceInvokeExpr) callSite.getInvokeExpr();
+                Body body = callee.getBody();
+                Collection<Local> params = body.getParameterLocals();
+                for (int i = 0; i < invokeExpr.getArgCount(); ++i) {
+                    Value arg = invokeExpr.getArg(i);
+                    if (fact.getVariable().equals(arg)) {
+                        Object methodParam = params.toArray()[i];
+                        if (methodParam instanceof Local) {
+                            out.add(new DataFlowFact((Local) methodParam));
+                        }
+                    }
+                }
+            }
             return out;
         };
     }
@@ -48,6 +65,17 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
                 //TODO: Implement Exercise 1a) here
 
+                if (call.containsInvokeExpr()) {
+                    AbstractInvokeExpr invokeExpr = call.getInvokeExpr();
+                    String methodName = invokeExpr.getMethodSignature().getName();
+                    if (methodName.contains("getParameter") && call instanceof JAssignStmt) {
+                        JAssignStmt assignStmt = (JAssignStmt) call;
+                        Value leftOp = assignStmt.getLeftOp();
+                        if (leftOp instanceof Local) {
+                            out.add(new DataFlowFact((Local) leftOp));
+                        }
+                    }
+                }
             }
             if (call.toString().contains("executeQuery")) {
                 Value arg = call.getInvokeExpr().getArg(0);
@@ -87,6 +115,13 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
             //TODO: Implement Exercise 1b) here
 
+            if (curr instanceof JAssignStmt) {
+                JAssignStmt assignStmt = (JAssignStmt) curr;
+                if (assignStmt.getRightOp().equals(fact.getVariable())) {
+                    Local leftVar = (Local) assignStmt.getLeftOp();
+                    out.add(new DataFlowFact(leftVar.withName(leftVar.getName())));
+                }
+            }
             return out;
         };
     }
