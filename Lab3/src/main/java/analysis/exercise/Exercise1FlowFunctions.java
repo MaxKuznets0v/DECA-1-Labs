@@ -5,6 +5,7 @@ import analysis.VulnerabilityReporter;
 import analysis.fact.DataFlowFact;
 import com.google.common.collect.Sets;
 import heros.FlowFunction;
+import sootup.core.jimple.basic.LValue;
 import sootup.core.jimple.basic.Local;
 import sootup.core.jimple.basic.Value;
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr;
@@ -16,6 +17,7 @@ import sootup.core.model.SootMethod;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
@@ -26,6 +28,56 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
         this.reporter = reporter;
     }
 
+    // Implements Exercise 1c)
+    static public Optional<DataFlowFact> ResolveCodeFlowFunction(Stmt callSite, SootMethod callee, DataFlowFact fact) {
+        if (callSite.containsInvokeExpr()) {
+            AbstractInstanceInvokeExpr invokeExpr = (AbstractInstanceInvokeExpr) callSite.getInvokeExpr();
+            Body body = callee.getBody();
+            Collection<Local> params = body.getParameterLocals();
+            for (int i = 0; i < invokeExpr.getArgCount(); ++i) {
+                Value arg = invokeExpr.getArg(i);
+                if (fact.getVariable().equals(arg)) {
+                    Object methodParam = params.toArray()[i];
+                    if (methodParam instanceof Local) {
+                        return Optional.of(new DataFlowFact((Local) methodParam));
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    // Implements Exercise 1a)
+    static public Optional<DataFlowFact> ResolveCallToReturnFlowFunction(Stmt call) {
+        if (call.containsInvokeExpr()) {
+            AbstractInvokeExpr invokeExpr = call.getInvokeExpr();
+            String methodName = invokeExpr.getMethodSignature().getName();
+            if (methodName.contains("getParameter") && call instanceof JAssignStmt) {
+                JAssignStmt assignStmt = (JAssignStmt) call;
+                Value leftOp = assignStmt.getLeftOp();
+                if (leftOp instanceof Local) {
+                    return Optional.of(new DataFlowFact((Local) leftOp));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    // Implements Exercise 1b)
+    static public Optional<DataFlowFact> ResolveNormalFlowFunction(final Stmt curr, DataFlowFact fact) {
+        if (curr instanceof JAssignStmt) {
+            JAssignStmt assignStmt = (JAssignStmt) curr;
+            if (assignStmt.getRightOp().equals(fact.getVariable())) {
+                LValue leftOp = assignStmt.getLeftOp();
+                if (leftOp instanceof Local) {
+                    Local leftVar = (Local) leftOp;
+                    return Optional.of(new DataFlowFact(leftVar.withName(leftVar.getName())));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     @Override
     public FlowFunction<DataFlowFact> getCallFlowFunction(Stmt callSite, SootMethod callee) {
         return fact -> {
@@ -34,22 +86,8 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
             prettyPrint(callSite, fact);
             Set<DataFlowFact> out = Sets.newHashSet();
 
-            //TODO: Implement Exercise 1c) here
-
-            if (callSite.containsInvokeExpr()) {
-                AbstractInstanceInvokeExpr invokeExpr = (AbstractInstanceInvokeExpr) callSite.getInvokeExpr();
-                Body body = callee.getBody();
-                Collection<Local> params = body.getParameterLocals();
-                for (int i = 0; i < invokeExpr.getArgCount(); ++i) {
-                    Value arg = invokeExpr.getArg(i);
-                    if (fact.getVariable().equals(arg)) {
-                        Object methodParam = params.toArray()[i];
-                        if (methodParam instanceof Local) {
-                            out.add(new DataFlowFact((Local) methodParam));
-                        }
-                    }
-                }
-            }
+            Optional<DataFlowFact> createdFact = ResolveCodeFlowFunction(callSite, callee, fact);
+            createdFact.ifPresent(out::add);
             return out;
         };
     }
@@ -62,20 +100,8 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
             modelStringOperations(val, out, call);
 
             if (val.equals(DataFlowFact.getZeroInstance())) {
-
-                //TODO: Implement Exercise 1a) here
-
-                if (call.containsInvokeExpr()) {
-                    AbstractInvokeExpr invokeExpr = call.getInvokeExpr();
-                    String methodName = invokeExpr.getMethodSignature().getName();
-                    if (methodName.contains("getParameter") && call instanceof JAssignStmt) {
-                        JAssignStmt assignStmt = (JAssignStmt) call;
-                        Value leftOp = assignStmt.getLeftOp();
-                        if (leftOp instanceof Local) {
-                            out.add(new DataFlowFact((Local) leftOp));
-                        }
-                    }
-                }
+                Optional<DataFlowFact> createdFact = ResolveCallToReturnFlowFunction(call);
+                createdFact.ifPresent(out::add);
             }
             if (call.toString().contains("executeQuery")) {
                 Value arg = call.getInvokeExpr().getArg(0);
@@ -113,15 +139,8 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
             Set<DataFlowFact> out = Sets.newHashSet();
             out.add(fact);
 
-            //TODO: Implement Exercise 1b) here
-
-            if (curr instanceof JAssignStmt) {
-                JAssignStmt assignStmt = (JAssignStmt) curr;
-                if (assignStmt.getRightOp().equals(fact.getVariable())) {
-                    Local leftVar = (Local) assignStmt.getLeftOp();
-                    out.add(new DataFlowFact(leftVar.withName(leftVar.getName())));
-                }
-            }
+            Optional<DataFlowFact> createdFact = ResolveNormalFlowFunction(curr, fact);
+            createdFact.ifPresent(out::add);
             return out;
         };
     }
