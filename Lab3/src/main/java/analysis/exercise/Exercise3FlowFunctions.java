@@ -5,15 +5,19 @@ import analysis.VulnerabilityReporter;
 import analysis.fact.DataFlowFact;
 import com.google.common.collect.Sets;
 import heros.FlowFunction;
+import sootup.core.jimple.basic.LValue;
 import sootup.core.jimple.basic.Local;
 import sootup.core.jimple.basic.Value;
 import sootup.core.jimple.common.expr.AbstractInstanceInvokeExpr;
 import sootup.core.jimple.common.ref.JInstanceFieldRef;
 import sootup.core.jimple.common.stmt.JAssignStmt;
 import sootup.core.jimple.common.stmt.Stmt;
+import sootup.core.model.Body;
 import sootup.core.model.SootMethod;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
@@ -35,8 +39,24 @@ public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
             prettyPrint(callSite, fact);
             Set<DataFlowFact> out = Sets.newHashSet();
 
-            //TODO: Implement Exercise 1c) here
-            //TODO: Implement interprocedural part of Exercise 3 here.
+            if (callSite.containsInvokeExpr()) {
+                AbstractInstanceInvokeExpr invokeExpr = (AbstractInstanceInvokeExpr) callSite.getInvokeExpr();
+                Body body = callee.getBody();
+                Collection<Local> params = body.getParameterLocals();
+                for (int i = 0; i < invokeExpr.getArgCount(); ++i) {
+                    Value arg = invokeExpr.getArg(i);
+                    if (fact.getVariable().equals(arg)) {
+                        Object methodParam = params.toArray()[i];
+                        if (methodParam instanceof Local) {
+                            if (fact.getFieldSignature() != null) {
+                                out.add(new DataFlowFact((Local) methodParam, fact.getFieldSignature()));
+                            } else {
+                                out.add(new DataFlowFact((Local) methodParam));
+                            }
+                        }
+                    }
+                }
+            }
 
             return out;
         };
@@ -50,9 +70,8 @@ public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
             modelStringOperations(val, out, call);
 
             if (val == DataFlowFact.getZeroInstance()) {
-
-                //TODO: Implement Exercise 1a) here
-
+                Optional<DataFlowFact> createdFact = Exercise1FlowFunctions.ResolveCallToReturnFlowFunction(call);
+                createdFact.ifPresent(out::add);
             }
             if (call.toString().contains("executeQuery")) {
                 Value arg = call.getInvokeExpr().getArg(0);
@@ -103,8 +122,27 @@ public class Exercise3FlowFunctions extends TaintAnalysisFlowFunctions {
             Set<DataFlowFact> out = Sets.newHashSet();
             out.add(fact);
 
-            //TODO: Implement Exercise 1b) here
-            //TODO: Implement cases for field load and field store statement of Exercise 3) here
+            if (curr instanceof JAssignStmt) {
+                JAssignStmt assignStmt = (JAssignStmt) curr;
+                Value rightOp = assignStmt.getRightOp();
+                DataFlowFact rightFact = null;
+                if (rightOp instanceof JInstanceFieldRef) {
+                    JInstanceFieldRef rightFieldRef = (JInstanceFieldRef) rightOp;
+                    rightFact = new DataFlowFact(rightFieldRef.getBase(), rightFieldRef.getFieldSignature());
+                }
+
+                if (rightOp.equals(fact.getVariable()) || fact.equals(rightFact)) {
+                    LValue leftOp = assignStmt.getLeftOp();
+                    if (leftOp instanceof Local) {
+                        Local leftVar = (Local)assignStmt.getLeftOp();
+                        out.add(new DataFlowFact(leftVar.withName(leftVar.getName())));
+                    }
+                    if (leftOp instanceof JInstanceFieldRef) {
+                        JInstanceFieldRef fieldRef = (JInstanceFieldRef) leftOp;
+                        out.add(new DataFlowFact(fieldRef.getBase(), fieldRef.getFieldSignature()));
+                    }
+                }
+            }
 
             return out;
         };
