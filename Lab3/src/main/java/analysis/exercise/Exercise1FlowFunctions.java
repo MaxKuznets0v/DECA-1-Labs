@@ -28,7 +28,12 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
     @Override
     public FlowFunction<DataFlowFact> getCallFlowFunction(Stmt callSite, SootMethod callee) {
+        // returns a function with 1 DataFlow as an input that's once applied..
+        // will return a set of DataFlowFact's for the called method/function.
+        // e.g. x = fun(y); where y is tainted and fun(String z){}.
+        // once the FlowFunction is applied, it will return {z}
         return fact -> {
+            System.out.println("Calling: getCallFlowFunction");
             if (fact.equals(DataFlowFact.getZeroInstance()))
                 return Collections.emptySet();
             prettyPrint(callSite, fact);
@@ -56,7 +61,7 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
     public FlowFunction<DataFlowFact> getCallToReturnFlowFunction(final Stmt call, Stmt returnSite) {
         return val -> {
-
+            System.out.println("Calling: getCallToReturnFunction");
             Set<DataFlowFact> out = Sets.newHashSet();
             out.add(val);
             modelStringOperations(val, out, call);
@@ -108,7 +113,12 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
     @Override
     public FlowFunction<DataFlowFact> getNormalFlowFunction(final Stmt curr, Stmt succ) {
+        // returns a function that takes as an input a single DataFlowFact. once this function is applied,
+        // it will return a set of DataFlowFact's generated.
+        // e.g. x = a, where a is tainted.
+        // once the FlowFunction is applied, the output would be a set containing {x, a}
         return fact -> {
+            System.out.println("Calling: getNormalFlowFunction");
             prettyPrint(curr, fact);
             Set<DataFlowFact> out = Sets.newHashSet();
             out.add(fact);
@@ -129,6 +139,7 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
     @Override
     public FlowFunction<DataFlowFact> getReturnFlowFunction(Stmt callSite, SootMethod callee, Stmt exitStmt, Stmt retSite) {
         return fact -> {
+            System.out.println("Calling: getReturnFlowFunction");
             prettyPrint(callSite, fact);
             return Collections.emptySet();
         };
