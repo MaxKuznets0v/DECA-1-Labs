@@ -52,6 +52,7 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
         if (call.containsInvokeExpr()) {
             AbstractInvokeExpr invokeExpr = call.getInvokeExpr();
             String methodName = invokeExpr.getMethodSignature().getName();
+            // TODO: Check if logic is correct, this will taint any expr with the form of x = getParameter(..);
             if (methodName.contains("getParameter") && call instanceof JAssignStmt) {
                 JAssignStmt assignStmt = (JAssignStmt) call;
                 Value leftOp = assignStmt.getLeftOp();
