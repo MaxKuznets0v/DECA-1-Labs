@@ -29,7 +29,7 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
     }
 
     // Implements Exercise 1c)
-    static public Optional<DataFlowFact> ResolveCodeFlowFunction(Stmt callSite, SootMethod callee, DataFlowFact fact) {
+    static public Optional<DataFlowFact> ResolveCallFlowFunction(Stmt callSite, SootMethod callee, DataFlowFact fact) {
         if (callSite.containsInvokeExpr()) {
             AbstractInstanceInvokeExpr invokeExpr = (AbstractInstanceInvokeExpr) callSite.getInvokeExpr();
             Body body = callee.getBody();
@@ -92,7 +92,7 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
             prettyPrint(callSite, fact);
             Set<DataFlowFact> out = Sets.newHashSet();
 
-            Optional<DataFlowFact> createdFact = ResolveCodeFlowFunction(callSite, callee, fact);
+            Optional<DataFlowFact> createdFact = ResolveCallFlowFunction(callSite, callee, fact);
             createdFact.ifPresent(out::add);
             return out;
         };
