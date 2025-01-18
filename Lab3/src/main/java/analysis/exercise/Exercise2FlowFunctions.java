@@ -34,22 +34,20 @@ public class Exercise2FlowFunctions extends TaintAnalysisFlowFunctions {
             AbstractInstanceInvokeExpr invokeExpr = (AbstractInstanceInvokeExpr) callSite.getInvokeExpr();
             Body body = callee.getBody();
             Collection<Local> params = body.getParameterLocals();
+
             for (int i = 0; i < invokeExpr.getArgCount(); ++i) {
                 Value arg = invokeExpr.getArg(i);
-                // fact contains a variable (e.g. x in method foo(x))
                 if (fact.getVariable().equals(arg)) {
                     Object methodParam = params.toArray()[i];
                     if (methodParam instanceof Local) {
                         return Optional.of(new DataFlowFact((Local) methodParam));
+
                     }
                 }
-                // fact contains a field ref. (e.g. obj.f in method foo(o.f))
-                /** Here could be the reason why tests are failing. How to check if arg is a field ref ? **/
-                if (arg instanceof JInstanceFieldRef){
-                    JInstanceFieldRef fieldRef = (JInstanceFieldRef) arg;
+                else if (fact.getFieldSignature() != null) {
                     Object methodParam = params.toArray()[i];
-                    if (methodParam instanceof Local && fact.getFieldSignature().equals(fieldRef.getFieldSignature())) {
-                        return Optional.of(new DataFlowFact((Local) methodParam));
+                    if (methodParam instanceof Local) {
+                        return Optional.of(new DataFlowFact(fact.getFieldSignature()));
                     }
                 }
             }
@@ -87,7 +85,7 @@ public class Exercise2FlowFunctions extends TaintAnalysisFlowFunctions {
             if (isRightOpTainted){
                 if (assignStmt.getLeftOp() instanceof JInstanceFieldRef) {
                     JInstanceFieldRef fieldRef = (JInstanceFieldRef) assignStmt.getLeftOp();
-                    // Taint the field `o.f`
+                    // Taint the field `obj.f`
                     return Optional.of(new DataFlowFact(fieldRef.getFieldSignature()));
                 }
             }
