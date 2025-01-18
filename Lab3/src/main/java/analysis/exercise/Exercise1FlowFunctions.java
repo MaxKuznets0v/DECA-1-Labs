@@ -52,7 +52,6 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
         if (call.containsInvokeExpr()) {
             AbstractInvokeExpr invokeExpr = call.getInvokeExpr();
             String methodName = invokeExpr.getMethodSignature().getName();
-            // TODO: Check if logic is correct, this will taint any expr with the form of x = getParameter(..);
             if (methodName.contains("getParameter") && call instanceof JAssignStmt) {
                 JAssignStmt assignStmt = (JAssignStmt) call;
                 Value leftOp = assignStmt.getLeftOp();
@@ -86,7 +85,6 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
         // e.g. x = fun(y); where y is tainted and fun(String z){}.
         // once the FlowFunction is applied, it will return {z}
         return fact -> {
-            System.out.println("Calling: getCallFlowFunction");
             if (fact.equals(DataFlowFact.getZeroInstance()))
                 return Collections.emptySet();
             prettyPrint(callSite, fact);
@@ -100,7 +98,6 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
 
     public FlowFunction<DataFlowFact> getCallToReturnFlowFunction(final Stmt call, Stmt returnSite) {
         return val -> {
-            System.out.println("Calling: getCallToReturnFunction");
             Set<DataFlowFact> out = Sets.newHashSet();
             out.add(val);
             modelStringOperations(val, out, call);
@@ -145,7 +142,6 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
         // e.g. x = a, where a is tainted.
         // once the FlowFunction is applied, the output would be a set containing {x, a}
         return fact -> {
-            System.out.println("Calling: getNormalFlowFunction");
             prettyPrint(curr, fact);
             Set<DataFlowFact> out = Sets.newHashSet();
             out.add(fact);
@@ -159,7 +155,6 @@ public class Exercise1FlowFunctions extends TaintAnalysisFlowFunctions {
     @Override
     public FlowFunction<DataFlowFact> getReturnFlowFunction(Stmt callSite, SootMethod callee, Stmt exitStmt, Stmt retSite) {
         return fact -> {
-            System.out.println("Calling: getReturnFlowFunction");
             prettyPrint(callSite, fact);
             return Collections.emptySet();
         };
