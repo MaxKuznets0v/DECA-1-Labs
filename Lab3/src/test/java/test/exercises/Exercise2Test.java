@@ -50,7 +50,7 @@ public class Exercise2Test extends TestSetup {
         assertContainsDataFlowFactAtStmt("FIELDBASED <target.exercise2and3.FieldNoSQLInjection$ObjectWithTaint: java.lang.String userInput>", "conn#0 = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>(\"url\", \"userName\", \"password\")");
 
         //This is an imprecise propagation
-        assertContainsDataFlowFactAtStmt("loaded", "conn = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>(\"url\", \"userName\", \"password\")");
+        assertContainsDataFlowFactAtStmt("loaded", "conn#0 = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>(\"url\", \"userName\", \"password\")");
         assertEquals(1, reporter.getReportedVulnerabilities());
     }
 
@@ -61,7 +61,6 @@ public class Exercise2Test extends TestSetup {
         executeStaticAnalysis(DirectSQLInjection.class.getName());
 
         //Checks that the return variable "userId" of the call to getParameter is tainted.
-        // TODO: tests have been changed due to 'mistake', check if they need to be corrected back.
         assertContainsDataFlowFactAtStmt("userId#0", "conn = staticinvoke <java.sql.DriverManager: java.sql.Connection getConnection(java.lang.String,java.lang.String,java.lang.String)>(\"url\", \"userName\", \"password\")");
 
         assertContainsDataFlowFactAtStmt("query", "interfaceinvoke st.<java.sql.Statement: java.sql.ResultSet executeQuery(java.lang.String)>(query)");
