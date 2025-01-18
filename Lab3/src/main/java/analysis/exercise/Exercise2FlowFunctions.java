@@ -44,6 +44,7 @@ public class Exercise2FlowFunctions extends TaintAnalysisFlowFunctions {
                     }
                 }
                 // fact contains a field ref. (e.g. obj.f in method foo(o.f))
+                /** Here could be the reason why tests are failing. How to check if arg is a field ref ? **/
                 if (arg instanceof JInstanceFieldRef){
                     JInstanceFieldRef fieldRef = (JInstanceFieldRef) arg;
                     Object methodParam = params.toArray()[i];
